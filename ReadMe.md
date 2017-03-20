@@ -15,17 +15,17 @@ See section “Assumptions” below for further explanation.
 NOTE: script must be run in the directory that contains raw data files, such as "UCI HAR Dataset", which is created by unzipping the archive
 - loads relevant packages (plyr, dplyr, library)
 - reads dataset files into R objects:
-- activity labels (6 entries)
-  feature list (561)
-  TRAINING set (7352 entries for 21 subjects and their activities - multiple measurements/calculations of each of 561 features)
-  TEST set (2947 entries for 9 subjects and their activities - multiple measurements/calculations of each of 561 features)
-- labels training/test datasets with descriptive feature names (resolves duplicate names into unique ones) – `Assignment Step 4`
-- adds subject IDs and descriptive activity names to training/test datasets -  `Assignment Step 3`
-- merges training and test sets (10299 records) – `Assignment Step 1`
-- extracts 81 features on mean and SD for each measurement (see ‘Assumptions’ for further explanation) – `Assignment Step 2`
+	- activity labels (6 entries)
+	- feature list (561)
+	- TRAINING set (7352 entries for 21 subjects and their activities - multiple measurements/calculations of each of 561 features)
+	- TEST set (2947 entries for 9 subjects and their activities - multiple measurements/calculations of each of 561 features)
+- labels training/test datasets with descriptive feature names (resolves duplicate names into unique ones)
+- adds subject IDs and activity IDs to training/test datasets
+- merges training and test sets (10299 records)
+- extracts 81 features on mean and SD for each measurement (see ‘Assumptions’ for further explanation)
 - creates final descriptive feature names by further processing the labels
-- calculates mean of individual measurements for each one of the 40 subject-activity combinations that exist in the dataset and each one of the 81 selected features - `Assignment Step 5`
-- merges the table of calculated means for existing subject-activity combinations with the list of the 180 (30 x 6) possible subject-activity combinations, inserting NA where data is missing - `Assignment Step 5`
+- calculates mean of individual measurements for each one of the 180 subject-activity combinations
+- adds decriptive names of activities and sorts columns (first by subject ID, then by Activity ID)
 - writes the tidy data set (180 rows x 81 columns) into a text file
 
 ### Assumptions

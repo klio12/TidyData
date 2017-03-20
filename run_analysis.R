@@ -21,25 +21,23 @@ subject_test<- read.table("test/subject_test.txt") ## 2947 rows
 y_test<-read.table("test/y_test.txt") ## 2947 rows
 X_test<-read.table("test/X_test.txt") ## 2947 rows
 
-## rename column in subject tables
+## rename column in subject nd activity tables
 names(subject_test)[names(subject_test)=="V1"]<-"SubjectID"
 names(subject_train)[names(subject_train)=="V1"]<-"SubjectID"
+names(y_train)[names(y_train)=="V1"]<-"ActivityDescription"
+names(y_test)[names(y_test)=="V1"]<-"ActivityDescription"
 
 ## label data set with descriptive variable names
 names(X_train)<-features$V2 ## 561 rows
 names(X_test)<-features$V2 ## 561 rows
 
-## apply descriptive activity names
-y_test<-(merge(y_test, activity_labels, all=F) %>% select(ActivityDescription=V2))
-y_train<-(merge(y_train, activity_labels, all=F) %>% select(ActivityDescription=V2))
+## some column names are duplicate – make them unique to avoid bind_rows() removing the dupes
+names(X_train)<-make.names(names(X_train), unique = TRUE, allow_ = TRUE)
+names(X_test)<-make.names(names(X_test), unique = TRUE, allow_ = TRUE)
 
 ## add subject and activity IDs to measurement table
 X_train<-cbind(subject_train, y_train, X_train)  ##7352 x 563
 X_test<-cbind(subject_test, y_test, X_test) ## 2947 x 563
-
-## some column names are duplicate – make them unique to avoid bind_rows() removing the dupes
-names(X_train)<-make.names(names(X_train), unique = TRUE, allow_ = TRUE)
-names(X_test)<-make.names(names(X_test), unique = TRUE, allow_ = TRUE)
 
 ## Merge training and test sets into one dataset
 X_TrainTest<-bind_rows(X_train, X_test)  ##10299 563
@@ -74,19 +72,18 @@ a<-sub(".meanFreq...Z$", "_Zaxis_MeanFrequency", a)
 a<-sub(".meanFreq..$", "_MeanFrequency", a)
 names(X_TrainTestMeanSD)<-a
 
-## From data in #4, create second, independent tidy data set with average of each variable, for each activity and each subject
-## create all combinations of Subject identifiers and activities
-subAct<-merge(sort(unique(X_TrainTestMeanSD$SubjectID)), activity_labels$V2)  ## 180 x 2
-names(subAct)<-c("SubjectID", "ActivityDescription")
-
-## calculate mean values for all subject-activity combinations that exist in the dataset
+## From data in #4, create second, independent tidy data set with average of each variable,
+## for each activity and each subject
 X_TrainTestMeanSD <-(
 melt(X_TrainTestMeanSD, id=c("SubjectID", "ActivityDescription")) %>%
 dcast(SubjectID + ActivityDescription ~ variable, mean)
 ) ## 40 x 81
 
-## append calculated means for existing subject-activity combinations to the full list of subject-activity combinations
-X_TrainTestMeanSD <-merge(subAct, X_TrainTestMeanSD, by.y=c("SubjectID", "ActivityDescription"), by.x=c(names(subAct)<-c("SubjectID", "ActivityDescription")), all=T) ## 180 x 81
+## Add decriptive names of activities
+m<-merge(X_TrainTestMeanSD, activity_labels, by.x="ActivityDescription", by.y="V1")
+n<-m[order(m$SubjectID, m$ActivityDescription),]
+n$ActivityDescription<-n$V2
+X_TrainTestMeanSD<-select(n, SubjectID, ActivityDescription, 3:81) 
 
 ## create a text file containing tidy data set
-write.table(X_TrainTestMeanSD, "TidyDataSet.txt")
+write.table(X_TrainTestMeanSD, "TidyDataSet.txt", row.names=FALSE)
